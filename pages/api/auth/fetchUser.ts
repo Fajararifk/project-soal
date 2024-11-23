@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);  // Decode the token
+    const decoded : any = jwt.verify(token, process.env.JWT_SECRET!);  // Decode the token
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },  // Assuming the token contains the user's ID
     });

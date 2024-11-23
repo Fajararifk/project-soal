@@ -2,11 +2,14 @@
 import { prisma } from "@/lib/prisma";
 import { FaCrown } from "react-icons/fa";
 
+
 const Leaderboard = ({ resultsWithUserInfo }: any) => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/signin';
   };
+
+
   return (
     <div>
       <style jsx>{`/* leaderboard.css */
@@ -116,7 +119,7 @@ h1 {
               </tr>
             </thead>
             <tbody>
-              {resultsWithUserInfo.map((user: any, index: any) => (
+              {resultsWithUserInfo.map((user, index) => (
                 <tr key={user.userId} className={index < 3 ? "top-three" : ""}>
                   <td className="rank">{index + 1}</td>
                   <td className="name">
@@ -134,14 +137,20 @@ h1 {
   );
 };
 
+type QuizResult = {
+  userId: number;
+  quizScore: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  createdAt: Date;
+};
 export async function getServerSideProps() {
   
   const users = await prisma.user.findMany();
-  const quizResults = await prisma.quizResult.findMany({
+  const quizResults  = await prisma.quizResult.findMany({
     orderBy: { createdAt: 'desc' },
   });
-console.log(quizResults);
-  const latestResults = [];
+  const latestResults : any = [];
   const seenUserIds = new Set();
   
   for (const result of quizResults) {

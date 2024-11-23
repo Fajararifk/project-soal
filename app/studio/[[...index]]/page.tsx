@@ -15,3 +15,7 @@
 // export default function StudioPage() {
 //   return <NextStudio config={config} />
 // }
+
+export default function Page() {
+    return <div>Studio Page</div>;
+  }

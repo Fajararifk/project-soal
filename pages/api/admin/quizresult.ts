@@ -1,7 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@/lib/prisma';
-import jwt from 'jsonwebtoken';
-import { Console } from 'console';
 
 
 export default async function handler(req: any, res:any) {

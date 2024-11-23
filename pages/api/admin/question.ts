@@ -1,10 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@/lib/prisma';
-import jwt from 'jsonwebtoken';
-import { Console } from 'console';
+import { NextApiRequest, NextApiResponse } from 'next';
 
-
-export default async function handler(req: any, res:any) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { question, answers, correctAnswer , image } = req.body;
 
 

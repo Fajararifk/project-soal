@@ -49,7 +49,7 @@ const AdminQuestions = () => {
       question: string;
       answers: string[];
       correctAnswer: string;
-      image?: any; // Optional because the image might not always exist
+      image?: String; // Optional because the image might not always exist
     } = {
       question,
       answers,

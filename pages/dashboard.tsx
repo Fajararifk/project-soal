@@ -185,11 +185,6 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (selectedCategory) {
-      fetchQuestions();
-    }
-  }, [selectedCategory]);
-  useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       alert('You must be logged in!');

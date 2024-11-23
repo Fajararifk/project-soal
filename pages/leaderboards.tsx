@@ -55,7 +55,8 @@ const Leaderboard = ({ resultsWithUserInfo }: any) => {
       setFilteredResults(filtered);
     }
   }, [selectedCategory, resultsWithUserInfo]);
-
+  
+  debugger;
   const uniqueCategories = Array.from(
     new Set(resultsWithUserInfo.map((result: any) => result.category))
   );
@@ -273,20 +274,24 @@ export async function getServerSideProps() {
   const quizResults  = await prisma.quizResult.findMany({
     where: {
       counterInsert: {
-        lt: 2, // 'lt' stands for "less than"
+        lt: 4, // 'lt' stands for "less than"
       },
     },  
     orderBy: { createdAt: 'desc' },
   });
-  const latestResults : any = [];
-  const seenUserIds = new Set();
-  
-  for (const result of quizResults) {
-    if (!seenUserIds.has(result.userId)) {
-      latestResults.push(result);
-      seenUserIds.add(result.userId);
-    }
+  const latestResults: any = [];
+const seenUserCategories = new Set(); // Change to track userId and category combination
+
+for (const result of quizResults) {
+  // Combine userId and category into a unique identifier
+  const userCategoryKey = `${result.userId}_${result.category}`;
+
+  // Check if the userId and category combination has already been seen
+  if (!seenUserCategories.has(userCategoryKey)) {
+    latestResults.push(result); // Add the result to latestResults
+    seenUserCategories.add(userCategoryKey); // Mark this combination as seen
   }
+}
 
   const resultsWithUserInfo = latestResults.map((quiz) => {
     const user = users.find((user) => user.id === quiz.userId);
@@ -300,7 +305,8 @@ export async function getServerSideProps() {
       category: quiz.category,
     };
   }).sort((a, b) => b.quizScore - a.quizScore); ;
-
+  console.log("latestResults" + latestResults)
+  console.log("resultsWithUserInfo" + resultsWithUserInfo)
   return {
     props: { resultsWithUserInfo },
   };

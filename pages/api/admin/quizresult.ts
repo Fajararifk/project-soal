@@ -11,6 +11,7 @@ export default async function handler(req: any, res:any) {
     const userQuizResult = await prisma.quizResult.findFirst({
         where: {
           userId: userId,  // Filter by the provided userId
+          category: category,
         },
         orderBy: {
             createdAt: 'desc',  // Order by createdAt in descending order

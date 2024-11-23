@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 
 const questionsHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    debugger;
     const questions = await prisma.question.findMany(); // Fetch all questions
     return res.status(200).json({ questions });
   }

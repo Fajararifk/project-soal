@@ -1,15 +1,48 @@
 // pages/leaderboard.tsx
 import { prisma } from "@/lib/prisma";
 import { FaCrown } from "react-icons/fa";
+import { useState, useEffect } from 'react';
 
 
 const Leaderboard = ({ resultsWithUserInfo }: any) => {
+  const [user, setUser] = useState<{ id: any; role: string; name: string } | null>(null);
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/signin';
   };
+  
+  const handleQuestion = () => {
+    // Logic to open question management, visible only for admins
+    window.location.href = '/question';  // Adjust URL as necessary
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You must be logged in!');
+      window.location.href = '/signin';
+      return;
+    }
+
+    const fetchUser = async () => {
+      const response = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        localStorage.removeItem('token');
+        alert('Session expired. Please log in again.');
+        window.location.href = '/signin';
+        return;
+      }
+
+      const data = await response.json();      
+      setUser(data.user);
+    };
 
 
+    fetchUser();
+  }, []);
+  
   return (
     <div>
       <style jsx>{`/* leaderboard.css */
@@ -98,11 +131,28 @@ h1 {
         .logout-button:hover {
           background-color: #c82333; /* Darker red on hover */
         }
+          .question-button {
+          background-color: #28a745; /* Green color */
+          color: white;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: background-color 0.3s ease;
+        }
+
+        .question-button:hover {
+          background-color: #218838; /* Darker green on hover */
+        }
 `}
 
       </style>
       <div className="buttons-container">
         <button className="logout-button" onClick={handleLogout}>Logout</button>
+        {user?.role === 'ADMIN' && (
+          <button className="question-button" onClick={handleQuestion}>Manage Questions</button>
+        )}
       </div>
         <div className="leaderboard-container">
           <h1 className="font-bold mb-4 text-center text-2xl uppercase">

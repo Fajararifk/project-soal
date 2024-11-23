@@ -126,7 +126,6 @@ const Dashboard = () => {
         'Content-Type': 'application/json',
       },
     });
-    debugger;
     if (response.ok) {
       const responseData = await response.json();
       if(responseData == "Tidak bisa mengulang 3x"){

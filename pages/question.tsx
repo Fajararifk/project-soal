@@ -256,6 +256,22 @@ const AdminQuestions = () => {
           background-color: #0056b3; /* Darker blue on hover */
         }
 
+
+        .dashboard-button {
+          background-color: #007bff; /* Blue color */
+          color: white;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: background-color 0.3s ease;
+        }
+
+        .dashboard-button:hover {
+          background-color: lightblue; /* Darker blue on hover */
+        }
+
         .admin-question-container textarea {
           margin: 10px 0;
           padding: 10px;

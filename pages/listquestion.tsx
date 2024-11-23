@@ -519,7 +519,6 @@ type QuizResult = {
   createdAt: Date;
 };
 export async function getServerSideProps(context) {
-  debugger;
   const { category, userId } = context.query;
   const categories = await prisma.question.findMany({
     select: { category: true },

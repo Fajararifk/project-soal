@@ -12,9 +12,20 @@ const Dashboard = () => {
   const [message, setMessage] = useState('');
   const [isTabActive, setIsTabActive] = useState(true);
   const [notificationMessage, setNotificationMessage] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);  // Store categories
+  const [selectedCategory, setSelectedCategory] = useState<string>('');  // Store selected category
+  //const [questions, setQuestions] = useState<Question[]>([]);
+// State for filtered questions
+  const [filteredQuestions, setFilteredQuestions] = useState<any[]>([]);
 
 
   const router = useRouter();
+  const filterQuestionsByCategory = (selectedCategory: string) => {
+    const filtered = questions.filter(
+      (question) => question.category === selectedCategory
+    );
+    setFilteredQuestions(filtered);
+  };
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -38,17 +49,7 @@ const Dashboard = () => {
       setUser(data.user);
     };
 
-    const fetchQuestions = async () => {
-      const response = await fetch('/api/questions'); // Adjust with your API
-      const data = await response.json();
-      if (data && Array.isArray(data.questions)) {
-        setQuestions(data.questions);
-      } else {
-        console.error('Questions data is not an array', data);
-        setQuestions([]);  // Default to empty array if data is not valid
-      }
-    };
-
+    
     fetchUser();
     fetchQuestions();
 
@@ -56,7 +57,40 @@ const Dashboard = () => {
 
   
  
+  const fetchQuestions = async (category = '') => {
+    const response = await fetch(`/api/questions?category=${category}`); // Adjust with your API
+    const data = await response.json();
+    if (data && Array.isArray(data.questions)) {
+      setQuestions(data.questions);
+      
+      const uniqueCategories: string[] = [];
+      data.questions.forEach(question => {
+      if (!uniqueCategories.includes(question.category)) {
+        uniqueCategories.push(question.category);
+      }
+    });
 
+    // Update categories state after the loop finishes
+    setCategories(uniqueCategories);
+    console.log(questions)
+    console.log(categories)
+    } else {
+      console.error('Questions data is not an array', data);
+      setQuestions([]);
+      setCategories([]);  // Default to empty array if data is not valid
+    }
+  };
+  useEffect(() => {
+    fetchQuestions();
+  }, []); 
+
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchQuestions(selectedCategory);
+    } else {
+      fetchQuestions(); // Fetch all questions if no category selected
+    }
+  }, [selectedCategory]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -83,7 +117,7 @@ const Dashboard = () => {
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1 && !isSubmitted) {
+    if (currentQuestionIndex < filteredQuestions.length - 1 && !isSubmitted) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
@@ -100,7 +134,7 @@ const Dashboard = () => {
     let wrongAnswers = 0;
 
     // Calculate the score and count the correct and wrong answers
-    questions.forEach((question, index) => {
+    filteredQuestions.forEach((question, index) => {
       if (answers[index] === question.correctAnswer) {
         score += 5;
         correctAnswers += 1;
@@ -125,7 +159,8 @@ const Dashboard = () => {
       correctAnswers,
       wrongAnswers,
       quizScore: score,
-      counterInsert: 1
+      counterInsert: 1,
+      category : selectedCategory
     };
 
     console.log(payload);
@@ -138,8 +173,8 @@ const Dashboard = () => {
     });
     if (response.ok) {
       const responseData = await response.json();
-      if(responseData == "Tidak bisa mengulang 3x"){
-        setMessage("You have taken the exam 3 times. Please contact your teacher for further assistance.");
+      if(responseData == "Tidak bisa mengulang 1x"){
+        setMessage("You have taken the exam 1 times. Please contact your teacher for further assistance.");
       }else{
         setMessage('The school exam has been successfully submitted!!');
       }
@@ -148,6 +183,12 @@ const Dashboard = () => {
       setMessage('Something went wrong.');
     }
   };
+
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchQuestions();
+    }
+  }, [selectedCategory]);
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -156,6 +197,7 @@ const Dashboard = () => {
       return;
     }
     let role = null;
+
     const fetchUser = async () => {
       const response = await fetch('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
@@ -171,6 +213,7 @@ const Dashboard = () => {
       role = data.user.role;
       
     }
+
     fetchUser();
     const handleVisibilityChange = () => {
       
@@ -184,6 +227,8 @@ const Dashboard = () => {
         setNotificationMessage('Welcome back to the tab!');
       }
     };
+
+  
 
     // Add event listener for visibility change
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -404,13 +449,34 @@ const Dashboard = () => {
         )}
       </div>
       <div className="dashboard-container">
+      <select
+        value={selectedCategory}
+        onChange={(e) => {
+          const selected = e.target.value;
+          setSelectedCategory(selected);
+
+          // Filter questions based on the selected category
+          if (selected) {
+            filterQuestionsByCategory(selected);
+          } else {
+            setFilteredQuestions(questions); // Show all questions if no category selected
+          }
+        }}
+      >
+        <option value="">Select a category</option>
+        {categories.map((category) => (
+          <option key={category} value={category}>
+            {category}
+          </option>
+        ))}
+      </select>
         <div className="questions-container">
-          <h2>Question {currentQuestionIndex + 1} of {questions.length}</h2>
-          <h3>{questions[currentQuestionIndex]?.question}</h3>
-          {questions[currentQuestionIndex]?.image && (
+          <h2>Question {currentQuestionIndex + 1} of {filteredQuestions.length}</h2>
+          <h3>{filteredQuestions[currentQuestionIndex]?.question}</h3>
+          {filteredQuestions[currentQuestionIndex]?.image && (
             <img src={questions[currentQuestionIndex]?.image} alt="Question Image" />
           )}
-          {questions[currentQuestionIndex]?.answers.map((answer: string, index: number) => (
+          {filteredQuestions[currentQuestionIndex]?.answers.map((answer: string, index: number) => (
             <div
               key={index}
               className={`answer-option ${answers[currentQuestionIndex] === answer ? 'selected' : ''}`}
@@ -426,12 +492,12 @@ const Dashboard = () => {
           <button onClick={handleBack} disabled={currentQuestionIndex === 0 || isSubmitted}>
             Back
           </button>
-          <button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1 || isSubmitted}>
+          <button onClick={handleNext} disabled={currentQuestionIndex === filteredQuestions.length - 1 || isSubmitted}>
             Next
           </button>
         </div>
 
-        {currentQuestionIndex === questions.length - 1 && (
+        {currentQuestionIndex === filteredQuestions.length - 1 && (
           <div>
             <button onClick={handleSubmit} disabled={isSubmitted}>Submit</button>
           </div>

@@ -36,13 +36,16 @@ model QuizResult {
   quizScore    Int
   createdAt     DateTime @default(now())  
   counterInsert  Int
+  category      String
 }
 
 model Question {
   id           Int      @id @default(autoincrement())
+  userId       Int
   question     String? @db.Text
   answers      String[]
   correctAnswer String
+  category      String
   imageUrl      String? @db.Text 
   image         String? @db.Text 
   createdAt     DateTime @default(now())

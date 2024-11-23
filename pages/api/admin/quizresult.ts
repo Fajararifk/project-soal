@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 
 
 export default async function handler(req: any, res:any) {
-  const { userId, correctAnswers , wrongAnswers, quizScore, counterInsert} = req.body;
+  const { userId, correctAnswers , wrongAnswers, quizScore, counterInsert, category } = req.body;
 
   try {
     // Verify the token
@@ -17,7 +17,7 @@ export default async function handler(req: any, res:any) {
           },
     })
     if(userQuizResult){
-        if(userQuizResult?.counterInsert <= 3){
+        if(userQuizResult?.counterInsert <= 1){
             const newQuestion = await prisma.quizResult.create({
                 data: {
                     userId,
@@ -25,12 +25,13 @@ export default async function handler(req: any, res:any) {
                     wrongAnswers,
                     quizScore,
                     counterInsert : userQuizResult.counterInsert + counterInsert, // Set counterInsert to your desired value or logic
+                    category
                     },
             });
             return res.status(201).json(newQuestion);
         }
         else{
-            return res.status(201).json("Tidak bisa mengulang 3x")
+            return res.status(201).json("Tidak bisa mengulang lebih dari 1x")
         }
     } else {
         const newQuestion = await prisma.quizResult.create({
@@ -40,6 +41,7 @@ export default async function handler(req: any, res:any) {
                 wrongAnswers,
                 quizScore,
                 counterInsert, // Set counterInsert to your desired value or logic
+                category
                 },
         });
         return res.status(201).json(newQuestion);

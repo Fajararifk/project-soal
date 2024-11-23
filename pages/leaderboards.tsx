@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 
 const Leaderboard = ({ resultsWithUserInfo }: any) => {
   const [user, setUser] = useState<{ id: any; role: string; name: string } | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [filteredResults, setFilteredResults] = useState(resultsWithUserInfo);
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/signin';
@@ -43,6 +45,21 @@ const Leaderboard = ({ resultsWithUserInfo }: any) => {
     fetchUser();
   }, []);
   
+  useEffect(() => {
+    if (selectedCategory === "") {
+      setFilteredResults(resultsWithUserInfo);
+    } else {
+      const filtered = resultsWithUserInfo.filter(
+        (result: any) => result.category === selectedCategory
+      );
+      setFilteredResults(filtered);
+    }
+  }, [selectedCategory, resultsWithUserInfo]);
+
+  const uniqueCategories = Array.from(
+    new Set(resultsWithUserInfo.map((result: any) => result.category))
+  );
+
   return (
     <div>
       <style jsx>{`/* leaderboard.css */
@@ -158,23 +175,36 @@ h1 {
           <h1 className="font-bold mb-4 text-center text-2xl uppercase">
             Leaderboards 🏆
           </h1>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="">All Categories</option>
+            {uniqueCategories.map((category:any) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
           <table className="leaderboard-table">
             <thead>
               <tr>
                 <th>#</th>
                 <th>Name</th>
+                <th>Category Soal</th>
                 <th>Total Quiz Score</th>
                 <th>Correct Answers</th>
                 <th>Wrong Answers</th>
               </tr>
             </thead>
             <tbody>
-              {resultsWithUserInfo.map((user, index) => (
+              {filteredResults.map((user, index) => (
                 <tr key={user.userId} className={index < 3 ? "top-three" : ""}>
                   <td className="rank">{index + 1}</td>
                   <td className="name">
                     {user.name} {index === 0 && <FaCrown className="crown-icon" />}
                   </td>
+                  <td>{user.category}</td>
                   <td>{user.quizScore}</td>
                   <td>{user.correctAnswers}</td>
                   <td>{user.wrongAnswers}</td>
@@ -187,17 +217,15 @@ h1 {
   );
 };
 
-type QuizResult = {
-  userId: number;
-  quizScore: number;
-  correctAnswers: number;
-  wrongAnswers: number;
-  createdAt: Date;
-};
 export async function getServerSideProps() {
   
   const users = await prisma.user.findMany();
   const quizResults  = await prisma.quizResult.findMany({
+    where: {
+      counterInsert: {
+        lt: 2, // 'lt' stands for "less than"
+      },
+    },  
     orderBy: { createdAt: 'desc' },
   });
   const latestResults : any = [];
@@ -219,6 +247,7 @@ export async function getServerSideProps() {
       quizScore: quiz.quizScore,
       correctAnswers: quiz.correctAnswers,
       wrongAnswers: quiz.wrongAnswers,
+      category: quiz.category,
     };
   }).sort((a, b) => b.quizScore - a.quizScore); ;
 

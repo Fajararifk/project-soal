@@ -8,10 +8,11 @@ const questionsHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (req.method === 'POST') {
-    const { question, answers, correctAnswer } = req.body;
+    const { userId, question, answers, correctAnswer } = req.body;
 
     const newQuestion = await prisma.question.create({
       data: {
+        userId,
         question,
         answers,
         correctAnswer,

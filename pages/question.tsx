@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { prisma } from '@/lib/prisma';
 
 const AdminQuestions = () => {
+  const [user, setUser] = useState<{ id: any; role: string; name: string } | null>(null);
   const [question, setQuestion] = useState('');
   const [answers, setAnswers] = useState(['', '', '', '']);
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [message, setMessage] = useState('');
   const [userRole, setUserRole] = useState<string | null>(null);
+
   const [image, setImage] = useState<string | ArrayBuffer | null>(null);
+  const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
   const router = useRouter();
   useEffect(() => {
@@ -35,6 +42,7 @@ const AdminQuestions = () => {
       
       const data = await response.json();
       setUserRole(data.user.role);
+      setUser(data.user)
 
       if (data.user.role === 'SISWA') {
         // Redirect to another page if the user is 'siswa'
@@ -87,16 +95,25 @@ const AdminQuestions = () => {
     window.location.href = '/dashboard';
   };
 
+  const handleLisQuestion = () => {
+    //localStorage.removeItem('token');
+    setIsModalOpen(true); // Open the modal when clicking "List Question"
+    //window.location.href = '/listquestion';
+  };
+
   const handleSubmit = async () => {
     const payload: {
+      userId : number;
       question: string;
       answers: string[];
       correctAnswer: string;
-      image?: String; // Optional because the image might not always exist
+      category: String;
     } = {
+      userId: user?.id,
       question,
       answers,
       correctAnswer,
+      category
     };
   
     // Handle the image
@@ -106,10 +123,12 @@ const AdminQuestions = () => {
         
         // Prepare the JSON payload
         const payload = {
+          userId: user?.id,
           question,
           answers,
           correctAnswer,
-          image, // Send the Base64 string
+          category,
+          image // Send the Base64 string
         };
         // Send the JSON payload to the backend
         const response = await fetch('/api/admin/question', {
@@ -142,6 +161,29 @@ const AdminQuestions = () => {
       }
     }
   };
+  useEffect(() => {
+    const fetchCategories = async () => {
+      debugger;
+      const response = await fetch('/api/admin/categories');
+      const categoryOptions = await response.json();
+      console.log("categorynya adalah" + categoryOptions)
+      setCategories(categoryOptions);
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategory(e.target.value);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false); // Close the modal
+  };
+  const handleCategorySelect = () => {
+    // Redirect to /listquestion with the selected category
+    window.location.href = `/listquestion?category=${selectedCategory}&userId=${user?.id}`;
+  };
   if (userRole === null) {
     return <p>Loading...</p>; // Loading state until user role is fetched
   }
@@ -149,6 +191,74 @@ const AdminQuestions = () => {
   return (
     <div>
       <style jsx>{`
+      .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Dark background with some transparency */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* Modal Container */
+.modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+  color: #333;
+}
+
+/* Modal Title */
+.modal h2 {
+  text-align: center;
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  color: #007BFF;
+}
+
+/* Form Elements */
+select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+/* Buttons */
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="button"] {
+  background-color: #dc3545; /* Red color for cancel */
+  color: white;
+}
+
+button[type="button"]:hover {
+  background-color: #c82333;
+}
+
+button[type="submit"] {
+  background-color: #28a745; /* Green color for submit */
+  color: white;
+}
+
+button[type="submit"]:hover {
+  background-color: #218838; /* Darker green on hover */
+}
         .admin-question-container {
           display: flex;
           flex-direction: column;
@@ -272,6 +382,22 @@ const AdminQuestions = () => {
           background-color: lightblue; /* Darker blue on hover */
         }
 
+
+        .listquestion-button {
+          background-color: #007bff; /* Blue color */
+          color: white;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: background-color 0.3s ease;
+        }
+
+        .listquestion-button:hover {
+          background-color: lightblue; /* Darker blue on hover */
+        } 
+
         .admin-question-container textarea {
           margin: 10px 0;
           padding: 10px;
@@ -293,6 +419,24 @@ const AdminQuestions = () => {
         <button className="logout-button" onClick={handleLogout}>Logout</button>
         <button className="leaderboard-button" onClick={handleLeaderboard}>Leaderboard</button>
         <button className="dashboard-button" onClick={handleDashboard}>Dashboard</button>
+        <button className="listquestion-button" onClick={handleLisQuestion}>List Question</button>
+        {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Select Category</h2>
+            <select value={selectedCategory} onChange={handleCategoryChange}>
+              <option value="">Select a category</option>
+              {categories.map((category, index) => (
+                <option key={index} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            <button onClick={handleCategorySelect}>Go to List of Questions</button>
+            <button onClick={handleModalClose}>Cancel</button>
+          </div>
+        </div>
+      )}
       </div>
       <div className="admin-question-container">
         <h1>Create New Question</h1>
@@ -327,6 +471,13 @@ const AdminQuestions = () => {
           placeholder="Upload an image"
         />
         <p>Input Image</p>
+        <input
+          type="text"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          placeholder="Category"
+        />
+        <p>Category</p>
         <button onClick={handleSubmit}>Submit</button>
         <p>{message}</p>
       </div>

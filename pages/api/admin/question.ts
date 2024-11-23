@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { question, answers, correctAnswer , image } = req.body;
+  const { userId , question, answers, correctAnswer , category, image } = req.body;
 
 
   try {
@@ -14,9 +14,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     const newQuestion = await prisma.question.create({
       data: {
+        userId,
         question,
         answers,
         correctAnswer,
+        category,
         image,
       },
     });

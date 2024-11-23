@@ -163,7 +163,6 @@ const AdminQuestions = () => {
   };
   useEffect(() => {
     const fetchCategories = async () => {
-      debugger;
       const response = await fetch('/api/admin/categories');
       const categoryOptions = await response.json();
       console.log("categorynya adalah" + categoryOptions)

@@ -14,7 +14,6 @@ const ListQuestion = ({ quizResults ,categoryOptions,category, userId}: any) => 
   const [userIds, setUserIds] = useState<number | null>(userId || 0);
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    debugger;
     const newCategory = e.target.value;
     setSelectedCategory(newCategory);
     // Reload the page with the selected category
@@ -124,7 +123,6 @@ const handleCancel = () => {
       }
       
       const data = await response.json();
-      debugger;
       setUserRole(data.user.role);
       setUserIds(data.user.id);
 

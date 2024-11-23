@@ -47,7 +47,7 @@ const Leaderboard = ({ resultsWithUserInfo }: any) => {
   
   useEffect(() => {
     if (selectedCategory === "") {
-      setFilteredResults(resultsWithUserInfo);
+      setFilteredResults([]);
     } else {
       const filtered = resultsWithUserInfo.filter(
         (result: any) => result.category === selectedCategory
@@ -227,8 +227,10 @@ select:disabled {
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            <option value="">All Categories</option>
-            {uniqueCategories.map((category:any) => (
+            <option value="">
+              Select a category
+            </option>
+            {uniqueCategories.map((category: any) => (
               <option key={category} value={category}>
                 {category}
               </option>

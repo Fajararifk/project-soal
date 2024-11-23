@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 const Dashboard = () => {
   const [user, setUser] = useState<{ id: any; role: string; name: string } | null>(null);
@@ -9,7 +10,11 @@ const Dashboard = () => {
   const [isSubmitted, setIsSubmitted] = useState(false); // To track if the quiz is submitted
   const [submissionMessage, setSubmissionMessage] = useState(''); // To store the submission message
   const [message, setMessage] = useState('');
+  const [isTabActive, setIsTabActive] = useState(true);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
+
+  const router = useRouter();
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -46,7 +51,12 @@ const Dashboard = () => {
 
     fetchUser();
     fetchQuestions();
+
   }, []);
+
+  
+ 
+
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -138,10 +148,55 @@ const Dashboard = () => {
       setMessage('Something went wrong.');
     }
   };
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You must be logged in!');
+      window.location.href = '/signin';
+      return;
+    }
+    let role = null;
+    const fetchUser = async () => {
+      const response = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        localStorage.removeItem('token');
+        alert('Session expired. Please log in again.');
+        window.location.href = '/signin';
+        return;
+      }
 
+      const data = await response.json();      
+      role = data.user.role;
+      
+    }
+    fetchUser();
+    const handleVisibilityChange = () => {
+      
+      if (!document.hidden && role === 'SISWA') {
+        // User switched to another tab
+        router.push('/signin');
+        setIsTabActive(false);
+      } else {
+        // User returned to this tab
+        setIsTabActive(true);
+        setNotificationMessage('Welcome back to the tab!');
+      }
+    };
+
+    // Add event listener for visibility change
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cleanup event listener on unmount
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
   if (user === null) {
     return <p>Loading...</p>;
   }
+  
 
   return (
     <div>

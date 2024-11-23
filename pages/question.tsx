@@ -1,11 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 const AdminQuestions = () => {
   const [question, setQuestion] = useState('');
   const [answers, setAnswers] = useState(['', '', '', '']);
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [message, setMessage] = useState('');
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [image, setImage] = useState<string | ArrayBuffer | null>(null);
+
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      // Redirect to login page if no token is found
+      router.push('/signin');
+      return;
+    }
+
+    const fetchUserRole = async () => {
+      // Example API call to fetch user role
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        localStorage.removeItem('token');
+        router.push('/signin'); // Redirect to login if session is invalid
+        return;
+      }
+      
+      const data = await response.json();
+      setUserRole(data.user.role);
+
+      if (data.user.role === 'SISWA') {
+        // Redirect to another page if the user is 'siswa'
+        router.push('/signin');
+      }
+    };
+
+    fetchUserRole();
+  }, [router]);
 
   const handleAnswerChange = (index: number, value: string) => {
     const newAnswers = [...answers];
@@ -99,6 +137,9 @@ const AdminQuestions = () => {
       }
     }
   };
+  if (userRole === null) {
+    return <p>Loading...</p>; // Loading state until user role is fetched
+  }
 
   return (
     <div>

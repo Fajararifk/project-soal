@@ -81,7 +81,12 @@ const AdminQuestions = () => {
     //localStorage.removeItem('token');
     window.location.href = '/leaderboards';
   };
-  
+
+  const handleDashboard = () => {
+    //localStorage.removeItem('token');
+    window.location.href = '/dashboard';
+  };
+
   const handleSubmit = async () => {
     const payload: {
       question: string;
@@ -254,6 +259,7 @@ const AdminQuestions = () => {
       <div className="buttons-container">
         <button className="logout-button" onClick={handleLogout}>Logout</button>
         <button className="leaderboard-button" onClick={handleLeaderboard}>Leaderboard</button>
+        <button className="dashboard-button" onClick={handleDashboard}>Dashboard</button>
       </div>
       <div className="admin-question-container">
         <h1>Create New Question</h1>

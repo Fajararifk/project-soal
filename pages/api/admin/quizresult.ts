@@ -1,0 +1,55 @@
+import { NextApiRequest, NextApiResponse } from 'next';
+import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
+import { Console } from 'console';
+
+
+export default async function handler(req: any, res:any) {
+  const { userId, correctAnswers , wrongAnswers, quizScore, counterInsert} = req.body;
+
+  try {
+    // Verify the token
+    
+    // Create a new question
+    const userQuizResult = await prisma.quizResult.findFirst({
+        where: {
+          userId: userId,  // Filter by the provided userId
+        },
+        orderBy: {
+            createdAt: 'desc',  // Order by createdAt in descending order
+          },
+    })
+    if(userQuizResult){
+        if(userQuizResult?.counterInsert <= 3){
+            const newQuestion = await prisma.quizResult.create({
+                data: {
+                    userId,
+                    correctAnswers,
+                    wrongAnswers,
+                    quizScore,
+                    counterInsert : userQuizResult.counterInsert + counterInsert, // Set counterInsert to your desired value or logic
+                    },
+            });
+            return res.status(201).json(newQuestion);
+        }
+        else{
+            return res.status(201).json("Tidak bisa mengulang 3x")
+        }
+    } else {
+        const newQuestion = await prisma.quizResult.create({
+            data: {
+                userId,
+                correctAnswers,
+                wrongAnswers,
+                quizScore,
+                counterInsert, // Set counterInsert to your desired value or logic
+                },
+        });
+        return res.status(201).json(newQuestion);
+    }
+  } catch (error) {
+    console.error('Error creating question:', error);
+    res.status(500).json({ message: 'Error creating question' });
+  }
+};
+

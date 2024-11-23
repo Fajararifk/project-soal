@@ -220,7 +220,7 @@ export async function getServerSideProps() {
       correctAnswers: quiz.correctAnswers,
       wrongAnswers: quiz.wrongAnswers,
     };
-  });
+  }).sort((a, b) => b.quizScore - a.quizScore); ;
 
   return {
     props: { resultsWithUserInfo },

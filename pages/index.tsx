@@ -17,7 +17,7 @@ export default function Home() {
     >
       <h1 style={{ fontSize: "3rem", marginBottom: "1rem" }}>Welcome to the App</h1>
       <p style={{ fontSize: "1.2rem", marginBottom: "2rem" }}>
-        A simple authentication app built with Next.js
+        Ujian Tengah Semester Pendidikan Olahraga
       </p>
       <div>
         <Link

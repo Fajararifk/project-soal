@@ -143,6 +143,54 @@ const handleCancel = () => {
   return (
     <div>
       <style jsx>{`/* leaderboard.css */
+
+      select {
+  width: 100%; /* Adjust to fit your layout */
+  max-width: 300px; /* Limit the maximum width */
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  appearance: none; /* Remove default browser styles */
+}
+
+/* Add a dropdown arrow icon */
+select::-ms-expand {
+  display: none;
+}
+
+/* Hover and focus styles */
+select:hover {
+  border-color: #007bff; /* Add a blue border on hover */
+}
+
+select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Option styles */
+select option {
+  padding: 8px;
+  background-color: #ffffff;
+  color: #333;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+/* Disabled state for the dropdown */
+select:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+}
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -417,7 +465,7 @@ h1 {
             List Of Questions 
           </h1>
           <div className="category-filter">
-        <label htmlFor="category">Choose Category:</label>
+        {/* <label htmlFor="category">Category : </label> */}
         <select
           id="category"
           value={selectedCategory}

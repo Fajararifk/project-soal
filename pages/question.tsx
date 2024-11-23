@@ -255,6 +255,23 @@ const AdminQuestions = () => {
         .leaderboard-button:hover {
           background-color: #0056b3; /* Darker blue on hover */
         }
+
+        .admin-question-container textarea {
+          margin: 10px 0;
+          padding: 10px;
+          width: 80%;
+          max-width: 400px;
+          border: none;
+          border-radius: 5px;
+          outline: none;
+          font-size: 16px;
+          background-color: rgba(255, 255, 255, 0.8);
+          resize: none; /* Prevents resizing if you want to keep it fixed */
+        }
+
+        .admin-question-container textarea:focus {
+          box-shadow: 0 0 10px #60a5fa;
+        }
       `}</style>
       <div className="buttons-container">
         <button className="logout-button" onClick={handleLogout}>Logout</button>
@@ -263,11 +280,12 @@ const AdminQuestions = () => {
       </div>
       <div className="admin-question-container">
         <h1>Create New Question</h1>
-        <input
-          type="text"
+        <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Enter question"
+          rows={4} // Adjust the rows based on the desired height
+          style={{ width: '100%', resize: 'both', minHeight: '100px' }} // Style for flexibility
         /><p>Question</p>
         {answers.map((answer, index) => (
           <input
